@@ -4,6 +4,9 @@ import { useContext, useEffect, useState } from "react";
 import { getBalanceOf } from "@/utils/contractMethods";
 import { Web3AuthContext } from "@/providers/AuthProvider";
 import { Web3AuthContextType } from "@/types/user";
+import { Connection, PublicKey } from "@solana/web3.js";
+
+import { TOKEN_PROGRAM_ID, AccountLayout } from "@solana/spl-token";
 
 export const useBalances = () => {
   const { viemPublicClient, viemWalletClient, user } = useContext(
@@ -16,28 +19,11 @@ export const useBalances = () => {
   const [ethBalance, setEthBalance] = useState(0);
 
   useEffect(() => {
-    if (!viemPublicClient || !viemWalletClient || !user) return;
+    if (!user) return;
     const loadBalance = async () => {
-      const bokwEthBalance = await getBalanceOf(
-        process.env.NEXT_PUBLIC_BOKWETH_CA as `0x${string}`,
-        viemWalletClient,
-        viemPublicClient
-      );
-      const bokwEpiBalance = await getBalanceOf(
-        process.env.NEXT_PUBLIC_BOKWEPI_CA as `0x${string}`,
-        viemWalletClient,
-        viemPublicClient
-      );
-      const bokwCpBalance = await getBalanceOf(
-        process.env.NEXT_PUBLIC_BOKWCP_CA as `0x${string}`,
-        viemWalletClient,
-        viemPublicClient
-      );
-      const bal = await viemPublicClient.getBalance({
-        address: user.address as `0x${string}`,
-      });
+      const bal = await fetchEthBalance(user);
 
-      setEthBalance(Number(formatUnits(bal, 18)));
+      setEthBalance(Number(bal));
       setBokwEthBlanace(bokwEthBalance);
       setBokwEpiBalance(bokwEpiBalance);
       setBokwCpBalance(bokwCpBalance);
@@ -45,33 +31,42 @@ export const useBalances = () => {
     loadBalance();
   }, [viemPublicClient, viemWalletClient, user]);
 
-  const fetchEthBalance = async () => {
-    if (!viemPublicClient || !user) return;
-    const bal = await viemPublicClient.getBalance({
-      address: user.address as `0x${string}`,
-    });
-    setEthBalance(Number(formatUnits(bal, 18)));
+  const fetchEthBalance = async (user: any) => {
+    let connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
+
+    const publicKey = new PublicKey(user.address);
+    const balance = await connection.getBalance(publicKey);
+    const solBalance = balance / 1e9;
+
+    setEthBalance(Number(solBalance));
+    return solBalance;
   };
 
-  const reFetchBalance = async () => {
-    const bokwEthBalance = await getBalanceOf(
-      process.env.NEXT_PUBLIC_BOKWETH_CA as `0x${string}`,
-      viemWalletClient!,
-      viemPublicClient!
+  const reFetchBalance = async (user: any) => {
+    let connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
+
+    const tokenAccounts = await connection.getTokenAccountsByOwner(
+      new PublicKey(user.address),
+      {
+        programId: TOKEN_PROGRAM_ID,
+      }
     );
-    const bokwEpiBalance = await getBalanceOf(
-      process.env.NEXT_PUBLIC_BOKWEPI_CA as `0x${string}`,
-      viemWalletClient!,
-      viemPublicClient!
-    );
-    const bokwCpBalance = await getBalanceOf(
-      process.env.NEXT_PUBLIC_BOKWCP_CA as `0x${string}`,
-      viemWalletClient!,
-      viemPublicClient!
-    );
-    setBokwEthBlanace(bokwEthBalance);
-    setBokwEpiBalance(bokwEpiBalance);
-    setBokwCpBalance(bokwCpBalance);
+
+    if (tokenAccounts.value.length === 0) {
+      console.log("No token accounts found for this wallet.");
+      return;
+    }
+
+    for (const tokenAccount of tokenAccounts.value) {
+      const accountInfo = tokenAccount.account.data;
+      const accountData = AccountLayout.decode(accountInfo);
+      const balance = accountData.amount.toString();
+
+      if (Number(balance) > 0) {
+        setBokwEthBlanace(Number(balance) / 1e8);
+        break;
+      }
+    }
   };
 
   return {

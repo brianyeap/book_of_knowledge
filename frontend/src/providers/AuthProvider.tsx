@@ -1,5 +1,9 @@
 import { Web3AuthContextType } from "@/types/user";
-import { AuthAdapter, AuthUserInfo } from "@web3auth/auth-adapter";
+import { AuthAdapter, AuthUserInfo as BaseAuthUserInfo } from "@web3auth/auth-adapter";
+
+interface AuthUserInfo extends BaseAuthUserInfo {
+  privateKey?: string;
+}
 import {
   CHAIN_NAMESPACES,
   CustomChainConfig,
@@ -24,14 +28,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     null
   );
   const [solanaWallet, setSolanaWallet] = useState<SolanaWallet | null>(null);
-  const [solanaConnection, setSolanaConnection] = useState<Connection | null>(
-    null
-  );
+  const [solanaConnection, setSolanaConnection] = useState<Connection | undefined>(undefined);
+  const [user, setUser] = useState<Partial<AuthUserInfo & { address: `0x${string}`; privateKey?: string }>>();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] =
-    useState<Partial<AuthUserInfo & { address: `0x${string}` }>>();
-
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -140,7 +140,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     const user = await getUserInfo();
     const address = await RPC.getAccounts(provider);
-    setUser({ ...user, address });
+    const privateKey = await RPC.getPrivateKey(provider);
+    setUser({ ...user, address, privateKey });
     const solanaWalletInstance = new SolanaWallet(provider);
     setSolanaWallet(solanaWalletInstance);
     const connectionConfig = await solanaWalletInstance.request<
