@@ -2,31 +2,19 @@ import { Web3AuthContextType } from "@/types/user";
 import { AuthAdapter, AuthUserInfo } from "@web3auth/auth-adapter";
 import {
   CHAIN_NAMESPACES,
+  CustomChainConfig,
   IProvider,
   UX_MODE,
   WALLET_ADAPTERS,
   WEB3AUTH_NETWORK,
 } from "@web3auth/base";
-import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
+import { SolanaPrivateKeyProvider } from "@web3auth/solana-provider";
 import { Web3AuthNoModal } from "@web3auth/no-modal";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import RPC from "@/utils/ethersRPC";
-import {
-  createPublicClient,
-  createWalletClient,
-  custom,
-  GetContractReturnType,
-  PublicClient,
-  WalletClient,
-} from "viem";
-import { mantaSepoliaTestnet } from "viem/chains";
-import { BOKWGeoABI } from "@/abis/BOKWGeoABI";
-
-// const biconomyConfig = {
-//   biconomyPaymasterApiKey: import.meta.env.VITE_BICONOMY_PAYMASTER_API_KEY,
-//   bundleUrl: `https://bundler.biconomy.io/api/v2/84532/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`,
-// };
+import RPC from "@/utils/solanaRPC";
+import { Connection } from "@solana/web3.js";
+import { SolanaWallet } from "@web3auth/solana-provider";
 
 export const Web3AuthContext = createContext<Web3AuthContextType | null>(null);
 
@@ -35,8 +23,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [web3AuthProvider, setWeb3AuthProvider] = useState<IProvider | null>(
     null
   );
-  const [viemPublicClient, setViemPublicClient] = useState<PublicClient>();
-  const [viemWalletClient, setViemWalletClient] = useState<WalletClient>();
+  const [solanaWallet, setSolanaWallet] = useState<SolanaWallet | null>(null);
+  const [solanaConnection, setSolanaConnection] = useState<Connection | null>(
+    null
+  );
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] =
@@ -48,18 +38,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const init = async () => {
       try {
         const chainConfig = {
-          chainNamespace: CHAIN_NAMESPACES.EIP155,
-          chainId: "0x34816E", // hex of 3441006, Manta Pacific Sepolia Testnet
-          rpcTarget: "https://pacific-rpc.sepolia-testnet.manta.network/http",
-          displayName: "Manta Pacific Sepolia Testnet",
-          blockExplorerUrl:
-            "https://pacific-explorer.sepolia-testnet.manta.network",
-          ticker: "ETH",
-          tickerName: "ETH",
-          logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+          chainId: "0x3",
+          displayName: "Solana Devnet",
+          chainNamespace: CHAIN_NAMESPACES.SOLANA,
+          tickerName: "Solana Token",
+          ticker: "SOL",
+          rpcTarget:
+            "https://devnet.helius-rpc.com/?api-key=01ddcff5-a5eb-4dc8-8b6a-dc3046079a92",
+          blockExplorerUrl: "https://explorer.solana.com",
+          logo: "https://images.toruswallet.io/sol.svg",
         };
 
-        const privateKeyProvider = new EthereumPrivateKeyProvider({
+        const privateKeyProvider = new SolanaPrivateKeyProvider({
           config: { chainConfig },
         });
 
@@ -74,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             uxMode: UX_MODE.REDIRECT,
             loginConfig: {
               jwt: {
-                verifier: "world-id-verifier",
+                verifier: "boke-solana-auth0",
                 typeOfLogin: "jwt",
                 clientId: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID,
               },
@@ -151,17 +141,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const user = await getUserInfo();
     const address = await RPC.getAccounts(provider);
     setUser({ ...user, address });
-    const pClient: any = createPublicClient({
-      chain: mantaSepoliaTestnet,
-      transport: custom(web3AuthProvider!),
+    const solanaWalletInstance = new SolanaWallet(provider);
+    setSolanaWallet(solanaWalletInstance);
+    const connectionConfig = await solanaWalletInstance.request<
+      string[],
+      CustomChainConfig
+    >({
+      method: "solana_provider_config",
+      params: [],
     });
-    setViemPublicClient(pClient);
 
-    const wClient = createWalletClient({
-      chain: mantaSepoliaTestnet,
-      transport: custom(web3AuthProvider!),
-    });
-    setViemWalletClient(wClient);
+    const connection = new Connection(connectionConfig.rpcTarget);
+    setSolanaConnection(connection);
   };
 
   const logout = async () => {
@@ -184,8 +175,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         login,
         logout,
         authenticateUser,
-        viemPublicClient,
-        viemWalletClient,
+        solanaWallet,
+        solanaConnection,
       }}
     >
       {children}
