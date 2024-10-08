@@ -81,22 +81,7 @@ export const executePlayGame = async (
   walletClient: WalletClient,
   publicClient: PublicClient
 ) => {
-  const address = (await walletClient.getAddresses())[0];
-
-  const hash = await walletClient.writeContract({
-    chain: mantaSepoliaTestnet,
-    account: address,
-    address: ca,
-    abi: BOKWGeoABI,
-    functionName: "playGame",
-    args: [],
-  });
-  console.log("PlayGame hash", hash);
-
-  const receipt = await publicClient.waitForTransactionReceipt({ hash });
-  console.log("PlayGame Receipt", receipt);
-
-  return hash;
+    
 };
 
 export const generateQuestion = async (
