@@ -42,8 +42,7 @@ const childVariant = {
 };
 
 const Contents = () => {
-  const { isLoading, user, login, logout, viemPublicClient, viemWalletClient } =
-    useAuth();
+  const { isLoading, user, login, logout } = useAuth();
   const router = useRouter();
   const [showSubject, setShowSubject] = useState(false);
   const [selectedModal, setSelectedModal] = useState("");
@@ -56,18 +55,19 @@ const Contents = () => {
 
   const handleLetsGo = async () => {
     setLetsGoLoading(true);
-    // const contractAddresses: { [key: string]: string } = {
-    //   ethereum: process.env.NEXT_PUBLIC_BOKWETH_CA as string,
-    //   city_planning: process.env.NEXT_PUBLIC_BOKWCP_CA as string,
-    //   epidemiology: process.env.NEXT_PUBLIC_BOKWEPI_CA as string,
-    // };
-    // toast.loading("Initializing game...", { duration: 4000 });
-    // const hash = await executePlayGame(
-    //   contractAddresses[selectedModal] as `0x${string}`,
-    //   viemWalletClient!,
-    //   viemPublicClient!
-    // );
-    router.push(`/game?subject=${selectedModal}`);
+    const contractAddresses: { [key: string]: string } = {
+      ethereum: process.env.NEXT_PUBLIC_BOKWETH_CA as string,
+      city_planning: process.env.NEXT_PUBLIC_BOKWCP_CA as string,
+      epidemiology: process.env.NEXT_PUBLIC_BOKWEPI_CA as string,
+    };
+    toast.loading("Initializing game...", { duration: 4000 });
+    try {
+      const hash = await executePlayGame(user);
+      router.push(`/game?subject=${selectedModal}&hash=${hash}`);
+    } catch (e) {
+      console.error(e);
+      toast.error("Not enough balance", { duration: 4000 });
+    }
   };
 
   return (

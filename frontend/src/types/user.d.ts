@@ -5,7 +5,9 @@ import { Connection } from "@solana/web3.js";
 
 export type Web3AuthContextType = {
   isLoading: boolean;
-  user: Partial<AuthUserInfo & { address: `0x${string}`, privateKey: string }> | undefined;
+  user:
+    | Partial<AuthUserInfo & { address: `0x${string}`; privateKey: string }>
+    | undefined;
   solanaConnection?: Connection;
   solanaWallet?: SolanaWallet;
   login: () => Promise<void>;
@@ -13,4 +15,11 @@ export type Web3AuthContextType = {
   authenticateUser: () => Promise<UserAuthInfo | undefined>; // get token ID
 };
 
-// export type User = {};
+export type SolanaUser =
+  | Partial<
+      AuthUserInfo & {
+        address: `0x${string}`;
+        privateKey: string;
+      }
+    >
+  | undefined;
