@@ -5,8 +5,10 @@ import Card from "../Card";
 import {
   faCity,
   faMap,
+  faMoneyBills,
   faNotesMedical,
   faRightFromBracket,
+  faSun,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
@@ -153,10 +155,10 @@ const Contents = () => {
             >
               <Card
                 className="bg-saffron w-full py-2"
-                // onClick={() => setSelectedModal("geography")}
+                onClick={() => setSelectedModal("economics")}
               >
                 <p className="font-chewy text-2xl sm:text-3xl md:text-4xl text-black text-center">
-                  Geography
+                  Economics
                 </p>
               </Card>
             </motion.div>
@@ -181,10 +183,10 @@ const Contents = () => {
             >
               <Card
                 className="bg-saffron w-full py-2"
-                onClick={() => setSelectedModal("ethereum")}
+                onClick={() => setSelectedModal("solana")}
               >
                 <p className="font-chewy text-2xl sm:text-3xl md:text-4xl text-black text-center">
-                  Ethereum
+                  Solana
                 </p>
               </Card>
             </motion.div>
@@ -218,14 +220,14 @@ const Contents = () => {
             <p className="font-bold text-lg">Cost</p>
             <div className="flex items-center jusitfy-center space-x-3">
               <p className="font-bold text-2xl text-center pt-1">50</p>
-              {selectedModal === "geography" && (
-                <FontAwesomeIcon icon={faMap} size="2x" />
+              {selectedModal === "solana" && (
+                <FontAwesomeIcon icon={faSun} size="2x" />
               )}
               {selectedModal === "epidemiology" && (
                 <FontAwesomeIcon icon={faNotesMedical} size="2x" />
               )}
-              {selectedModal === "ethereum" && (
-                <FontAwesomeIcon icon={faEthereum} size="2x" />
+              {selectedModal === "economics" && (
+                <FontAwesomeIcon icon={faMoneyBills} size="2x" />
               )}
               {selectedModal === "city-planning" && (
                 <FontAwesomeIcon icon={faCity} size="2x" />
