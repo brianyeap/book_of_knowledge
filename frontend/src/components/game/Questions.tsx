@@ -5,15 +5,7 @@ import { motion, useAnimation } from "framer-motion";
 import Card from "../Card";
 import * as Progress from "@radix-ui/react-progress";
 import { useSearchParams } from "next/navigation";
-import {
-  clientss,
-  getPlayGameResult,
-  getPromptResult,
-  getPromptUpdated,
-} from "@/graphql/getPrompt";
-import { generateQuestion } from "@/utils/contractMethods";
 import { useAuth } from "@/hooks/hooks";
-import { questionGenerate } from "@/utils/questionGenerator";
 import { calculateKnowledgeTokenDistribution } from "@/utils/calculateKnowledgeTokenDistribution";
 import toast from "react-hot-toast";
 
@@ -72,31 +64,37 @@ const Questions = ({
   const questionDuration: number = 18;
 
   useEffect(() => {
-    if (!txHash || !subject) return;
+    if (!subject) return;
 
     const initGame = async () => {
-      if (!txHash || !subject) return;
+      if (!subject) return;
       console.log(`Init ${subject} game`);
       let playGameRes = undefined;
-      while (!playGameRes) {
-        playGameRes = await getPlayGameResult(txHash, clientss[subject]);
-        console.log("playGameRes", playGameRes);
+      // while (!playGameRes) {
+      // playGameRes = await getPlayGameResult(txHash, clientss[subject]);
+      // console.log("playGameRes", playGameRes);
 
-        await delay(2500);
-      }
-
-      setCurrentGameIndex(playGameRes.gameIndex);
-      setOuterCurrentGameIndex(playGameRes.gameIndex);
+      // await delay(2500);
+      // }
+      setCurrentGameIndex(0);
+      setOuterCurrentGameIndex(0);
       toast.loading("Generating questions...", { duration: 4000 });
-      const promptInfo = await questionGenerate(
-        viemWalletClient!,
-        viemPublicClient!,
-        playGameRes.gameIndex,
-        subject,
-        []
-      );
-      setHistoryQuestions([promptInfo.question]);
-      setPromptObj(promptInfo);
+      // const promptInfo = await questionGenerate(
+      //   viemWalletClient!,
+      //   viemPublicClient!,
+      //   playGameRes.gameIndex,
+      //   subject,
+      //   []
+      // );
+      // const promptInfo = (await questionGenerateGPT(subject)) as any;
+      const res = await (
+        await fetch(`/api/generateQuestion?subject=${subject}`, {
+          method: "GET",
+        })
+      ).json();
+      console.log("received generated question", res);
+      setHistoryQuestions([res as any]);
+      setPromptObj(res as any);
     };
 
     initGame();
@@ -159,20 +157,20 @@ const Questions = ({
 
   // start the timer
   useEffect(() => {
-    if (!txHash || !subject) return;
+    if (!subject) return;
     if (promptObj === undefined) return;
     startAnimation();
     if (questionNum >= 3) return;
     const initNextPrompt = async () => {
-      const promptInfo = await questionGenerate(
-        viemWalletClient!,
-        viemPublicClient!,
-        currentGameIndex as number,
-        subject,
-        historyQuestions
-      );
-      setHistoryQuestions((prev) => [...prev, promptInfo.question]);
-      setNextPromptObj(promptInfo);
+      // const promptInfo = (await questionGenerateGPT(subject)) as any;
+      // console.log(promptInfo);
+      const res = await (
+        await fetch(`/api/generateQuestion?subject=${subject}`, {
+          method: "GET",
+        })
+      ).json();
+      setHistoryQuestions((prev) => [...prev, res.question]);
+      setNextPromptObj(res);
     };
     initNextPrompt();
   }, [promptObj]);
@@ -184,10 +182,10 @@ const Questions = ({
     console.log("timer", remainingTimePct);
     setSelectedAns(click);
     console.log(
-      `${click} === ${promptObj?.answer.toLowerCase()}`,
-      click.toLowerCase() === promptObj?.answer.toLowerCase()
+      `${click} === ${promptObj?.answer_key.toLowerCase()}`,
+      click.toLowerCase() === promptObj?.answer_key.toLowerCase()
     );
-    if (click.toLowerCase() === promptObj?.answer.toLowerCase()) {
+    if (click.toLowerCase() === promptObj?.answer_key.toLowerCase()) {
       console.log("setting to true");
       setResult(true);
     } else {
@@ -278,7 +276,7 @@ const Questions = ({
                   Question {questionNum}
                 </p>
                 <p className="font-chewy text-lg sm:text-xl md:text-2xl text-black text-center">
-                  Answer: {promptObj.choices[promptObj.answer]}
+                  Answer: {promptObj.choices[promptObj.answer_key]}
                 </p>
               </Card>
             )

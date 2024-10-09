@@ -79,3 +79,17 @@ export const questionGenerate = async (
   const promptInfo = parsePrompt(output);
   return promptInfo;
 };
+
+// export const questionGenerateGPT = async (
+//   subject: string,
+//   historyQuestions: string[]
+// ) => {
+//   const promptInfo = parsePrompt(output);
+
+//   return {
+//     question: question,
+//     choices: parseChoices(choicesArray),
+//     answer: parseAnswer(answerLine),
+//   };
+//   // return promptInfo;
+// };
