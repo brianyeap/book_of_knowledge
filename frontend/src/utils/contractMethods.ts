@@ -1,70 +1,3 @@
-// import {
-//   Account,
-//   Chain,
-//   formatUnits,
-//   getContract,
-//   type GetContractReturnType,
-//   PublicClient,
-//   Transport,
-//   WalletClient,
-// } from "viem";
-// import { BOKWGeoABI } from "@/abis/BOKWGeoABI";
-// import { FUNCTION_NAME } from "./constant";
-// import { mantaSepoliaTestnet } from "viem/chains";
-
-// export const instantiateContract = (
-//   ca: `0x${string}`,
-//   publicClient: PublicClient,
-//   walletClient: WalletClient<Transport, Chain>
-// ) => {
-//   const contract = getContract({
-//     address: ca,
-//     abi: BOKWGeoABI,
-//     client: {
-//       public: publicClient,
-//       wallet: walletClient,
-//     },
-//   });
-//   return contract;
-// };
-
-// export const executePlayGame = async (
-//   contractInstance: ReturnType<typeof instantiateContract>,
-//   publicClient: PublicClient
-// ) => {
-//   const hash = await contractInstance.write.playGame([] as never);
-//   console.log("PlayGame hash", hash);
-
-//   const receipt = await publicClient.waitForTransactionReceipt({ hash });
-//   console.log("PlayGame Receipt", receipt);
-// };
-
-// export const executeGenerateQuestion = async (
-//   contractInstance: ReturnType<typeof instantiateContract>,
-//   publicClient: PublicClient,
-//   gameIdx: number,
-//   prompt: string
-// ) => {
-//   const hash = await contractInstance.write.generateQuestion([
-//     BigInt(gameIdx),
-//     prompt,
-//   ]);
-//   console.log("GenerateQuestion hash", hash);
-
-//   const receipt = await publicClient.waitForTransactionReceipt({ hash });
-//   console.log("GenerateQuestion receipt", receipt);
-// };
-
-// export const getBalanceOf = async (
-//   contractInstance: ReturnType<typeof instantiateContract>,
-//   publicClient: PublicClient,
-//   walletClient: WalletClient
-// ) => {
-//   const addr = (await walletClient.getAddresses())[0];
-//   const balance = await contractInstance.read.balanceOf([addr]);
-//   return Number(formatUnits(balance, 18));
-// };
-
 import {
   formatUnits,
   getContract,
@@ -75,13 +8,45 @@ import {
 import { BOKWGeoABI } from "@/abis/BOKWGeoABI";
 import { FUNCTION_NAME } from "./constant";
 import { mantaSepoliaTestnet } from "viem/chains";
+import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import { SolanaUser } from "@/types/user";
+import {
+  burn,
+  createTransferInstruction,
+  getOrCreateAssociatedTokenAccount,
+} from "@solana/spl-token";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { createSignerFromKeypair } from "@metaplex-foundation/umi";
 
-export const executePlayGame = async (
-  ca: `0x${string}`,
-  walletClient: WalletClient,
-  publicClient: PublicClient
-) => {
-    
+export const executePlayGame = async (user: SolanaUser) => {
+  let connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
+  console.log(connection);
+
+  const FROM_KEYPAIR = Keypair.fromSecretKey(
+    Uint8Array.from(Buffer.from(user?.privateKey || "", "hex"))
+  );
+
+  console.log(FROM_KEYPAIR);
+
+  const userTokenAccount = await getOrCreateAssociatedTokenAccount(
+    connection,
+    FROM_KEYPAIR,
+    new PublicKey(process.env.NEXT_PUBLIC_BOKW_MINT_ADDRESS!),
+    FROM_KEYPAIR.publicKey
+  );
+
+  const signature = await burn(
+    connection,
+    FROM_KEYPAIR,
+    userTokenAccount.address,
+    new PublicKey(process.env.NEXT_PUBLIC_BOKW_MINT_ADDRESS!),
+    FROM_KEYPAIR,
+    50 * Math.pow(10, 8)
+  );
+  console.log("Transaction signature:", signature);
+
+  await connection.confirmTransaction(signature);
+  console.log("Play game initialization finished");
 };
 
 export const generateQuestion = async (

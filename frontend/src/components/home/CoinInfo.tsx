@@ -33,7 +33,7 @@ import { TOKEN_PROGRAM_ID, AccountLayout } from "@solana/spl-token";
 const CoinInfo = () => {
   const { user } = useAuth();
 
-  const { ethBalance, bokwEthBalance, fetchEthBalance, reFetchBalance } =
+  const { solBalance, bokwBalance, fetchSolBalance, reFetchBalance } =
     useBalances();
 
   const handleClaimTokens = async () => {
@@ -136,20 +136,20 @@ const CoinInfo = () => {
       await connection.confirmTransaction(signature);
       toast.dismiss(toastId);
       toast.success("Tx confirmed onChain!", { duration: 4000 });
-      await fetchEthBalance(user);
+      await fetchSolBalance(user);
       return;
     }
     toast.success("Claimed sol", { duration: 4000 });
-    toast.error("Failed to claimed Ssl", { duration: 4000 });
-    await fetchEthBalance(user);
+    toast.error("Failed to claimed Sol", { duration: 4000 });
+    await fetchSolBalance(user);
   };
 
   return (
     <div className="absolute z-20 top-0 left-0 w-screen p-2 sm:p-4 md:p-5 flex flex-col justify-end items-end gap-4">
       <Card className="py-2 px-2 sm:px-4 md:px-6 flex w-fit space-x-3 sm:space-x-4 md:space-x-5 border-saffron bg-white">
         <div className="flex items-center justify-center space-x-2 text-mnGreen">
-          <FontAwesomeIcon icon={faEthereum} />
-          <p className="font-poppins">{bokwEthBalance}</p>
+          <FontAwesomeIcon icon={faNotesMedical} />
+          <p className="font-poppins">{bokwBalance}</p>
         </div>
         {user && (
           <>
@@ -169,7 +169,7 @@ const CoinInfo = () => {
       </Card>
       <div className="flex gap-2">
         <button className="py-1 px-2 rounded-full border border-black text-xs text-black">
-          {ethBalance.toFixed(3)} SOL
+          {solBalance.toFixed(3)} SOL
         </button>
         <button
           className="py-1 px-2 rounded-full border border-black text-xs text-black"

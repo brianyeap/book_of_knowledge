@@ -9,36 +9,30 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID, AccountLayout } from "@solana/spl-token";
 
 export const useBalances = () => {
-  const { viemPublicClient, viemWalletClient, user } = useContext(
-    Web3AuthContext
-  ) as Web3AuthContextType;
+  const { user } = useContext(Web3AuthContext) as Web3AuthContextType;
 
-  const [bokwEthBalance, setBokwEthBlanace] = useState(0);
-  const [bokwEpiBalance, setBokwEpiBalance] = useState(0);
-  const [bokwCpBalance, setBokwCpBalance] = useState(0);
-  const [ethBalance, setEthBalance] = useState(0);
+  const [bokwBalance, setBokwBalance] = useState(0);
+  const [solBalance, setSolBalance] = useState(0);
 
   useEffect(() => {
     if (!user) return;
     const loadBalance = async () => {
-      const bal = await fetchEthBalance(user);
+      const bal = await fetchSolBalance(user);
 
-      setEthBalance(Number(bal));
-      setBokwEthBlanace(bokwEthBalance);
-      setBokwEpiBalance(bokwEpiBalance);
-      setBokwCpBalance(bokwCpBalance);
+      setSolBalance(Number(bal));
+      reFetchBalance(user);
     };
     loadBalance();
-  }, [viemPublicClient, viemWalletClient, user]);
+  }, [user]);
 
-  const fetchEthBalance = async (user: any) => {
+  const fetchSolBalance = async (user: any) => {
     let connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
 
     const publicKey = new PublicKey(user.address);
     const balance = await connection.getBalance(publicKey);
     const solBalance = balance / 1e9;
 
-    setEthBalance(Number(solBalance));
+    setSolBalance(Number(solBalance));
     return solBalance;
   };
 
@@ -63,18 +57,16 @@ export const useBalances = () => {
       const balance = accountData.amount.toString();
 
       if (Number(balance) > 0) {
-        setBokwEthBlanace(Number(balance) / 1e8);
+        setBokwBalance(Number(balance) / 1e8);
         break;
       }
     }
   };
 
   return {
-    bokwEthBalance,
-    bokwCpBalance,
-    bokwEpiBalance,
+    bokwBalance,
     reFetchBalance,
-    fetchEthBalance,
-    ethBalance,
+    fetchSolBalance,
+    solBalance,
   };
 };

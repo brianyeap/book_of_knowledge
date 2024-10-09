@@ -40,8 +40,7 @@ const childVariant = {
 };
 
 const Contents = () => {
-  const { isLoading, user, login, logout, viemPublicClient, viemWalletClient } =
-    useAuth();
+  const { isLoading, user, login, logout } = useAuth();
   const router = useRouter();
   const [showSubject, setShowSubject] = useState(false);
   const [selectedModal, setSelectedModal] = useState("");
@@ -60,12 +59,8 @@ const Contents = () => {
       epidemiology: process.env.NEXT_PUBLIC_BOKWEPI_CA as string,
     };
     toast.loading("Initializing game...", { duration: 4000 });
-    const hash = await executePlayGame(
-      contractAddresses[selectedModal] as `0x${string}`,
-      viemWalletClient!,
-      viemPublicClient!
-    );
-    router.push(`/game?subject=${selectedModal}&hash=${hash}`);
+    const hash = await executePlayGame(user);
+    // router.push(`/game?subject=${selectedModal}&hash=${hash}`);
   };
 
   return (
