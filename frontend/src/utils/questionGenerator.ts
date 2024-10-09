@@ -8,12 +8,10 @@ import {
 import { parsePrompt } from "./parsePrompt";
 
 const questions: { [key: string]: string } = {
-  ethereum:
-    "give me one 4 choices MCQ question on the subject ethereum with answer.",
-  city_planning:
-    "give me one 4 choices MCQ question on the subject city planning with answer.",
-  epidemiology:
-    "give me one 4 choices MCQ question on the subject epidemiology with answer.",
+  solana: "solana",
+  city_planning: "city planning",
+  epidemiology: "epidemiology",
+  economics: "economics",
 };
 
 const contractAddresses: { [key: string]: string } = {
@@ -79,3 +77,17 @@ export const questionGenerate = async (
   const promptInfo = parsePrompt(output);
   return promptInfo;
 };
+
+// export const questionGenerateGPT = async (
+//   subject: string,
+//   historyQuestions: string[]
+// ) => {
+//   const promptInfo = parsePrompt(output);
+
+//   return {
+//     question: question,
+//     choices: parseChoices(choicesArray),
+//     answer: parseAnswer(answerLine),
+//   };
+//   // return promptInfo;
+// };

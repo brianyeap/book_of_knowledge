@@ -15,6 +15,8 @@ import { useState, useEffect, useContext } from "react";
 import toast from "react-hot-toast";
 import { Web3AuthContext } from "@/providers/AuthProvider";
 import { Web3AuthContextType } from "@/types/user";
+import { handleClaimReward, handleClaimTokens } from "@/utils/contractMethods";
+import { useBalances } from "@/hooks/useBalances";
 
 const AnimatedNumber = ({ num }: { num: number }) => {
   const [animate, setAnimate] = useState(false);
@@ -74,21 +76,18 @@ const PostGame = ({
   const subject = useSearchParams().get("subject");
   const router = useRouter();
   const { user } = useContext(Web3AuthContext) as Web3AuthContextType;
+  const { reFetchBalance } = useBalances();
 
   useEffect(() => {
     const claimReward = async () => {
       const toastId = toast.loading("Claiming reward...");
-      const res = await fetch(
-        `/api/finishGame?player=${
-          user?.address
-        }&gameIdx=${outerCurrentGameIndex}&reward=${coinsEarned}&ca=${
-          contractAddresses[subject as string]
-        }`,
-        { method: "GET" }
-      );
-      toast.dismiss(toastId);
-      if (res.ok) toast.success("Reward claimed", { duration: 4000 });
-      else toast.error("Failed to claimed reward", { duration: 4000 });
+      try {
+        await handleClaimReward(user, reFetchBalance, coinsEarned);
+        toast.dismiss(toastId);
+        toast.success("Reward claimed", { duration: 4000 });
+      } catch (e) {
+        toast.error("Failed to claimed reward", { duration: 4000 });
+      }
     };
     if (!user) return;
     claimReward();

@@ -6,5 +6,5 @@ export type Prompt = {
     c: string;
     d: string;
   };
-  answer: "a" | "b" | "c" | "d";
+  answer_key: "a" | "b" | "c" | "d";
 };

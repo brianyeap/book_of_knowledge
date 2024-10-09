@@ -46,6 +46,8 @@ export const useBalances = () => {
       }
     );
 
+    console.log(tokenAccounts);
+
     if (tokenAccounts.value.length === 0) {
       console.log("No token accounts found for this wallet.");
       return;
