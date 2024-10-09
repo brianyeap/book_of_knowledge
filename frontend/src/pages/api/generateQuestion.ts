@@ -14,7 +14,7 @@ export const questionGenerateGPT = async (subject: string) => {
         content: [
           {
             type: "text",
-            text: `give me one question in ${subject}\n`,
+            text: `give me one question in ${subject}\nRandomisation seed: ${Date.now}`,
           },
         ],
       },

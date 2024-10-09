@@ -47,7 +47,6 @@ const Questions = ({
   setOuterCurrentGameIndex: Dispatch<SetStateAction<number | undefined>>;
 }) => {
   const controls = useAnimation();
-  const { viemPublicClient, viemWalletClient } = useAuth();
   const [promptObj, setPromptObj] = useState<Prompt | undefined>(undefined);
   const [nextPromptObj, setNextPromptObj] = useState<Prompt | undefined>(
     undefined
@@ -61,7 +60,7 @@ const Questions = ({
   const [questionTimeLeft, setQuestionTimeLeft] = useState(0);
   const txHash = useSearchParams().get("hash");
   const subject = useSearchParams().get("subject");
-  const questionDuration: number = 18;
+  const questionDuration: number = 30;
 
   useEffect(() => {
     if (!subject) return;
@@ -69,7 +68,6 @@ const Questions = ({
     const initGame = async () => {
       if (!subject) return;
       console.log(`Init ${subject} game`);
-      let playGameRes = undefined;
       // while (!playGameRes) {
       // playGameRes = await getPlayGameResult(txHash, clientss[subject]);
       // console.log("playGameRes", playGameRes);

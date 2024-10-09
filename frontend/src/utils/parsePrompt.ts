@@ -26,7 +26,7 @@ const parseAnswer = (answerLine: string): "a" | "b" | "c" | "d" => {
   return answer;
 };
 
-export const parsePrompt = (prompt: string): Prompt => {
+export const parsePrompt = (prompt: string) => {
   const cleanPrompt = prompt.replace(/\*/g, "");
   console.log("cleanPrompt", cleanPrompt);
   const splitUpArray = cleanPrompt.split("\n");
@@ -45,12 +45,6 @@ export const parsePrompt = (prompt: string): Prompt => {
     choices: parseChoices(choicesArray),
     answer: parseAnswer(answerLine),
   });
-
-  return {
-    question: question,
-    choices: parseChoices(choicesArray),
-    answer: parseAnswer(answerLine),
-  };
 };
 
 // const reply = "Here's a MCQ question on geography:\n";

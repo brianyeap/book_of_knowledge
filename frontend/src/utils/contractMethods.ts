@@ -32,7 +32,7 @@ import {
 } from "@metaplex-foundation/mpl-token-metadata";
 
 export const executePlayGame = async (user: SolanaUser) => {
-  let connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
+  const connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
   console.log(connection);
 
   const FROM_KEYPAIR = Keypair.fromSecretKey(
@@ -144,7 +144,7 @@ export const handleClaimTokens = async (
   reFetchBalance: (user: SolanaUser) => Promise<void>,
   amount: number = 100
 ) => {
-  let connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
+  const connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
 
   const tokenAccounts = await connection.getTokenAccountsByOwner(
     new PublicKey(user?.address || ""),
@@ -234,7 +234,7 @@ export const handleClaimReward = async (
   reFetchBalance: (user: SolanaUser) => Promise<void>,
   amount: number = 100
 ) => {
-  let connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
+  const connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
 
   const tokenAccounts = await connection.getTokenAccountsByOwner(
     new PublicKey(user?.address || ""),

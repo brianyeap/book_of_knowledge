@@ -26,7 +26,7 @@ export const useBalances = () => {
   }, [user]);
 
   const fetchSolBalance = async (user: any) => {
-    let connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
+    const connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
 
     const publicKey = new PublicKey(user.address);
     const balance = await connection.getBalance(publicKey);
@@ -37,7 +37,7 @@ export const useBalances = () => {
   };
 
   const reFetchBalance = async (user: any) => {
-    let connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
+    const connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!);
 
     const tokenAccounts = await connection.getTokenAccountsByOwner(
       new PublicKey(user.address),
